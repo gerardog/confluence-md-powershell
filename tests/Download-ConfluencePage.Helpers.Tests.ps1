@@ -1,4 +1,4 @@
-#Requires -Modules Pester
+﻿#Requires -Modules Pester
 <#
 .SYNOPSIS
     Pester 5 tests for helper functions defined in Download-ConfluencePage.ps1.
@@ -28,7 +28,7 @@
 #>
 
 BeforeAll {
-    $downloaderScript = Join-Path -Path $PSScriptRoot -ChildPath '..' -AdditionalChildPath 'Download-ConfluencePage.ps1'
+    $downloaderScript = Join-Path (Join-Path $PSScriptRoot '..') 'Download-ConfluencePage.ps1'
     $downloaderScript = (Resolve-Path $downloaderScript).Path
 
     # Stub mandatory-parameter cmdlets so the script body fails gracefully after
