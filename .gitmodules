@@ -1,0 +1,3 @@
+[submodule "upstream/confluence-md"]
+	path = upstream/confluence-md
+	url = https://github.com/jackchuka/confluence-md.git

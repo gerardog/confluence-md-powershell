@@ -23,7 +23,7 @@ Many enterprise and air-gapped environments have PowerShell available but do not
 
 ## Git Submodule
 
-This repository includes `jackchuka/confluence-md` as a Git submodule at `./confluence-md/`. The submodule:
+This repository includes `jackchuka/confluence-md` as a Git submodule at `./upstream/confluence-md/`. The submodule:
 
 - Keeps the upstream project cleanly separated from the local PowerShell scripts
 - Locks this repository to a known, reviewed version of the upstream code
@@ -72,7 +72,7 @@ No additional modules or compiled binaries are required.
 
 ## Project Status
 
-This project is in early development. The conversion script is being built incrementally by porting behaviour from the reference implementation in `./confluence-md/`. See the open issues for the current roadmap.
+This project is in early development. The conversion script is being built incrementally by porting behaviour from the reference implementation in `./upstream/confluence-md/`. See the open issues for the current roadmap.
 
 ## Upstream Relationship
 
