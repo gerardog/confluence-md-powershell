@@ -23,11 +23,12 @@ jobs:
         shell: pwsh
         run: |
           $settings = './PSScriptAnalyzerSettings.psd1'
-          $warnings = Invoke-ScriptAnalyzer -Path . -Recurse -Settings $settings -Severity Warning
+          $results = Invoke-ScriptAnalyzer -Path . -Recurse -Settings $settings -Severity Warning,Error
+          $warnings = @($results | Where-Object { $_.Severity -eq 'Warning' })
           if ($warnings) {
             $warnings | Format-Table -AutoSize
           }
-          $errors = Invoke-ScriptAnalyzer -Path . -Recurse -Settings $settings -Severity Error
+          $errors = @($results | Where-Object { $_.Severity -eq 'Error' })
           if ($errors) {
             $errors | Format-Table -AutoSize
             exit 1
