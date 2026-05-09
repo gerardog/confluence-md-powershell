@@ -17,7 +17,7 @@ jobs:
 
       - name: Install PSScriptAnalyzer
         shell: pwsh
-        run: Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
+        run: Install-Module PSScriptAnalyzer -RequiredVersion 1.22.0 -Force -Scope CurrentUser
 
       - name: Run PSScriptAnalyzer
         shell: pwsh
