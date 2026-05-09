@@ -74,17 +74,9 @@ No additional modules or compiled binaries are required.
 
 This project is in early development. The conversion script is being built incrementally by porting behaviour from the reference implementation in `./confluence-md/`. See the open issues for the current roadmap.
 
-## GitHub Strategy
+## Upstream Relationship
 
-This project uses a Git submodule as a deliberate strategy for working with an external repository without copying all of its source code directly into this repo. The submodule keeps the upstream project separated while still allowing this repository to reference a specific, pinned version of it.
-
-This approach:
-
-- Keeps upstream code separate from local PowerShell scripts
-- Tracks exactly which version of the external project is being used
-- Makes future updates easier to compare and review
-- Lets AI agents inspect both the local scripts and the referenced source code
-- Supports restricted environments where only repository source code is available
+This project is a PowerShell-oriented port of the original [`jackchuka/confluence-md`](https://github.com/jackchuka/confluence-md) tool. The upstream repository remains the reference implementation for conversion behaviour, while this repository focuses on providing a source-only PowerShell workflow for environments where compiled binaries are not suitable.
 
 ## Related Projects
 
