@@ -362,7 +362,7 @@ function Convert-Tables ([string]$Html) {
                 $isComplex = (
                     $cellContent -match '<(ul|ol|div|blockquote|pre|table|ac:task-list)[^>]*>' -or
                     ([regex]::Matches($cellContent, '<(p|h[1-6])[^>]*>').Count -gt 1) -or
-                    $cellContent -match '<br[^>]*/?>|-containsBrTag'
+                    $cellContent -match '<br[^>]*/?>'
                 )
 
                 if ($isComplex) {
