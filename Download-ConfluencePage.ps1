@@ -83,7 +83,10 @@ function Get-PageInfoFromUrl ([string]$Url) {
     if (-not $Url) { throw 'Page URL is empty.' }
 
     $uri     = [System.Uri] $Url
-    $baseURL = "$($uri.Scheme)://$($uri.Host)"
+    # Use Authority (host+port) to preserve non-default ports.
+    # Port of: commands/shared.go :: urlToPageInfo() – fmt.Sprintf("%s://%s", u.Scheme, u.Host)
+    # Note: Go's u.Host includes the port when non-default; [System.Uri].Authority does too.
+    $baseURL = "$($uri.Scheme)://$($uri.Authority)"
 
     $parts    = $uri.AbsolutePath -split '/'
     $pageID   = ''
@@ -155,13 +158,25 @@ function Get-ConfluencePage ([string]$BaseUrl, [string]$PageID, [hashtable]$Head
     $r      = Invoke-RestMethod -Method Get -Uri $apiUrl -Headers $Headers -ErrorAction Stop
 
     # Port of: model/api.go :: ConvertAPIPageToModel()
+    # Guard against missing metadata/labels nodes (API change, permission differences)
     $labels = @()
-    foreach ($lbl in $r.metadata.labels.results) {
+    $labelResults = if ($null -ne $r.PSObject.Properties['metadata'] -and
+                        $null -ne $r.metadata.PSObject.Properties['labels'] -and
+                        $null -ne $r.metadata.labels.PSObject.Properties['results']) {
+        $r.metadata.labels.results
+    } else { @() }
+    foreach ($lbl in $labelResults) {
         $labels += @{ ID = $lbl.id; Name = $lbl.name }
     }
 
+    # Guard against missing children/attachment nodes
     $attachments = @()
-    foreach ($att in $r.children.attachment.results) {
+    $attachResults = if ($null -ne $r.PSObject.Properties['children'] -and
+                         $null -ne $r.children.PSObject.Properties['attachment'] -and
+                         $null -ne $r.children.attachment.PSObject.Properties['results']) {
+        $r.children.attachment.results
+    } else { @() }
+    foreach ($att in $attachResults) {
         $attachments += @{
             ID           = $att.id
             Title        = $att.title
@@ -244,7 +259,7 @@ function Get-ImageReferences ([string]$Html) {
         $fnM = [regex]::Match($m.Value, 'ri:filename="([^"]+)"')
         if ($fnM.Success) { $refs += $fnM.Groups[1].Value }
     }
-    return $refs | Select-Object -Unique
+    return @($refs | Select-Object -Unique)
 }
 
 # ---------------------------------------------------------------------------
@@ -266,7 +281,7 @@ function Save-AttachmentImage (
 
     if (-not $attachment) {
         Write-Warning "Attachment not found on page: $Filename"
-        return
+        return $false
     }
 
     $downloadUrl = Get-NormalizedDownloadLink $BaseUrl $attachment.DownloadLink
@@ -277,13 +292,22 @@ function Save-AttachmentImage (
         'User-Agent'  = $Headers['User-Agent']
     }
 
+    # Sanitize filename to a safe leaf name, preventing path traversal.
+    # Port of: converter.go :: downloadImages() – saves files by attachment title only.
+    $safeFilename = [System.IO.Path]::GetFileName($Filename)
+    if (-not $safeFilename -or $safeFilename -ne $Filename) {
+        Write-Warning "Skipping unsafe attachment filename: $Filename"
+        return $false
+    }
+
     if (-not (Test-Path -LiteralPath $DestDir)) {
         New-Item -ItemType Directory -Path $DestDir -Force | Out-Null
     }
 
-    $destPath = Join-Path -Path $DestDir -ChildPath $Filename
+    $destPath = Join-Path -Path $DestDir -ChildPath $safeFilename
     Invoke-WebRequest -Uri $downloadUrl -Headers $dlHeaders -OutFile $destPath -ErrorAction Stop
     Write-Host "  📥 Downloaded image: $Filename"
+    return $true
 }
 
 # ---------------------------------------------------------------------------
@@ -312,8 +336,9 @@ if (-not (Test-Path -LiteralPath $OutputDir)) {
 }
 $outputPath = Join-Path -Path $OutputDir -ChildPath $fileName
 
-# Write storage HTML to a temp file and run the converter script
-$tmpHtml = [System.IO.Path]::GetTempFileName() + '.html'
+# Write storage HTML to a temp file and run the converter script.
+# GetTempFileName() creates the temp file; use it directly to avoid leaking a second file.
+$tmpHtml = [System.IO.Path]::GetTempFileName()
 try {
     Set-Content -LiteralPath $tmpHtml -Value $page.HtmlContent -Encoding UTF8
 
@@ -342,8 +367,9 @@ if ($DownloadImages) {
     $refs      = Get-ImageReferences $page.HtmlContent
 
     foreach ($filename in $refs) {
-        Save-AttachmentImage $page $filename $baseUrl $headers $imageDest
-        $imagesDownloaded++
+        if (Save-AttachmentImage $page $filename $baseUrl $headers $imageDest) {
+            $imagesDownloaded++
+        }
     }
 }
 

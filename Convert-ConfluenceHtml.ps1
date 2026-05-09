@@ -265,13 +265,17 @@ function Convert-ConfluenceLinks ([string]$Html) {
             return " @user($accountId) "
         }
 
-        # ri:page child → inline link
+        # ri:page child → pass through so the generic tag stripper preserves body text.
+        # Port of: confluence.go :: handleLink() – returns RenderTryNext for non-user links,
+        # leaving page links for the default html-to-markdown handler.
+        # We emit just the visible label text (storage format has no page-ID in this node).
         $pageM = [regex]::Match($inner, 'ri:content-title="([^"]+)"')
         if ($pageM.Success) {
-            $title = $pageM.Groups[1].Value
-            $bodyM = [regex]::Match($inner, '<ac:plain-text-link-body[^>]*>([^<]+)</ac:plain-text-link-body>')
-            $label = if ($bodyM.Success) { $bodyM.Groups[1].Value } else { $title }
-            return "[$label]($title)"
+            $titleText = $pageM.Groups[1].Value
+            $bodyM     = [regex]::Match($inner, '<ac:plain-text-link-body[^>]*>([^<]+)</ac:plain-text-link-body>')
+            $label     = if ($bodyM.Success) { $bodyM.Groups[1].Value } else { $titleText }
+            # Return just the label; a page ID is not available in storage format.
+            return $label
         }
 
         # Anything else: keep the raw element so the standard pass can handle it.
