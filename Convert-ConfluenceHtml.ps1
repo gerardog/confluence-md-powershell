@@ -121,6 +121,15 @@ function Convert-ConfluenceMacro ([string]$MacroHtml) {
     $macroName = if ($nameM.Success) { $nameM.Groups[1].Value } else { 'unknown' }
 
     $fence = '```'
+    $emojiInfo    = [char]::ConvertFromUtf32(0x2139) + [char]::ConvertFromUtf32(0xFE0F)
+    $emojiWarning = [char]::ConvertFromUtf32(0x26A0) + [char]::ConvertFromUtf32(0xFE0F)
+    $emojiNote    = [char]::ConvertFromUtf32(0x1F4DD)
+    $emojiTip     = [char]::ConvertFromUtf32(0x1F4A1)
+    $emojiRed     = [char]::ConvertFromUtf32(0x1F534)
+    $emojiYellow  = [char]::ConvertFromUtf32(0x1F7E1)
+    $emojiGreen   = [char]::ConvertFromUtf32(0x1F7E2)
+    $emojiBlue    = [char]::ConvertFromUtf32(0x1F535)
+    $emojiWhite   = [char]::ConvertFromUtf32(0x26AA)
 
     switch ($macroName) {
         # --- handleCodeMacro() -----------------------------------------------
@@ -132,10 +141,10 @@ function Convert-ConfluenceMacro ([string]$MacroHtml) {
         }
 
         # --- handleBlockquoteMacro() -----------------------------------------
-        'info'    { return Convert-BlockquoteMacro $MacroHtml 'ℹ️'  'Info'    }
-        'warning' { return Convert-BlockquoteMacro $MacroHtml '⚠️'  'Warning' }
-        'note'    { return Convert-BlockquoteMacro $MacroHtml '📝'  'Note'    }
-        'tip'     { return Convert-BlockquoteMacro $MacroHtml '💡'  'Tip'     }
+        'info'    { return Convert-BlockquoteMacro $MacroHtml $emojiInfo 'Info' }
+        'warning' { return Convert-BlockquoteMacro $MacroHtml $emojiWarning 'Warning' }
+        'note'    { return Convert-BlockquoteMacro $MacroHtml $emojiNote 'Note' }
+        'tip'     { return Convert-BlockquoteMacro $MacroHtml $emojiTip 'Tip' }
 
         # --- handleMermaidMacro() --------------------------------------------
         # The converter script has no API client, so it cannot fetch mermaid
@@ -166,11 +175,11 @@ function Convert-ConfluenceMacro ([string]$MacroHtml) {
             $title  = Get-MacroParameter $MacroHtml 'title'
             $colour = Get-MacroParameter $MacroHtml 'colour'
             $emoji  = switch ($colour.ToLower()) {
-                'red'                      { '🔴' }
-                'yellow'                   { '🟡' }
-                'green'                    { '🟢' }
-                'blue'                     { '🔵' }
-                { $_ -in 'grey', 'gray' }  { '⚪' }
+                'red'                      { $emojiRed }
+                'yellow'                   { $emojiYellow }
+                'green'                    { $emojiGreen }
+                'blue'                     { $emojiBlue }
+                { $_ -in 'grey', 'gray' }  { $emojiWhite }
                 default                    { ''   }
             }
             if ($title) {
