@@ -57,7 +57,7 @@ $pageId = Get-ConfluencePageIdFromUrl -Url $PageUrl
 $apiBase = Get-ConfluenceApiBaseUrl -Url $PageUrl
 $requestUrl = '{0}/rest/api/content/{1}?expand=body.storage' -f $apiBase, $pageId
 
-$basicAuth = [Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes("$Email`:$ApiToken"))
+$basicAuth = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("$Email`:$ApiToken"))
 $headers = @{
     Authorization = "Basic $basicAuth"
     Accept        = 'application/json'

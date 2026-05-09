@@ -32,11 +32,55 @@ function Convert-HtmlToMarkdown {
     $markdown = [regex]::Replace($markdown, '<\s*b[^>]*>(.*?)<\s*/\s*b\s*>', '**$1**', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor [System.Text.RegularExpressions.RegexOptions]::Singleline)
     $markdown = [regex]::Replace($markdown, '<\s*em[^>]*>(.*?)<\s*/\s*em\s*>', '*$1*', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor [System.Text.RegularExpressions.RegexOptions]::Singleline)
     $markdown = [regex]::Replace($markdown, '<\s*i[^>]*>(.*?)<\s*/\s*i\s*>', '*$1*', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor [System.Text.RegularExpressions.RegexOptions]::Singleline)
-    $markdown = [regex]::Replace($markdown, '<a[^>]*href\s*=\s*["'']([^"'']+)["''][^>]*>(.*?)</a>', '[$2]($1)', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor [System.Text.RegularExpressions.RegexOptions]::Singleline)
-    $markdown = [regex]::Replace($markdown, '<img[^>]*alt\s*=\s*["'']([^"'']*)["''][^>]*src\s*=\s*["'']([^"'']+)["''][^>]*>', '![$1]($2)', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
-    $markdown = [regex]::Replace($markdown, '<img[^>]*src\s*=\s*["'']([^"'']+)["''][^>]*alt\s*=\s*["'']([^"'']*)["''][^>]*>', '![$2]($1)', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
-    $markdown = [regex]::Replace($markdown, '<\s*li[^>]*>(.*?)<\s*/\s*li\s*>', "- `$1`n", [System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor [System.Text.RegularExpressions.RegexOptions]::Singleline)
-    $markdown = [regex]::Replace($markdown, '<\s*/?\s*(ul|ol)[^>]*>', "`n", [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+    $markdown = [regex]::Replace($markdown, "<a[^>]*href\s*=\s*[`"']([^`"']+)[`"'][^>]*>(.*?)</a>", '[$2]($1)', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor [System.Text.RegularExpressions.RegexOptions]::Singleline)
+    $markdown = [regex]::Replace($markdown, "<img[^>]*alt\s*=\s*[`"']([^`"']*)[`"'][^>]*src\s*=\s*[`"']([^`"']+)[`"'][^>]*>", '![$1]($2)', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+    $markdown = [regex]::Replace($markdown, "<img[^>]*src\s*=\s*[`"']([^`"']+)[`"'][^>]*alt\s*=\s*[`"']([^`"']*)[`"'][^>]*>", '![$2]($1)', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+    $markdown = [regex]::Replace(
+        $markdown,
+        '<\s*ol[^>]*>(.*?)<\s*/\s*ol\s*>',
+        {
+            param($match)
+            $items = [regex]::Matches($match.Groups[1].Value, '<\s*li[^>]*>(.*?)<\s*/\s*li\s*>', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor [System.Text.RegularExpressions.RegexOptions]::Singleline)
+            $index = 1
+            $lines = foreach ($item in $items) {
+                $line = [regex]::Replace($item.Groups[1].Value, '<[^>]+>', '', [System.Text.RegularExpressions.RegexOptions]::Singleline).Trim()
+                if ($line) {
+                    "$index. $line"
+                    $index++
+                }
+            }
+
+            if ($lines) {
+                "`n$($lines -join "`n")`n"
+            }
+            else {
+                ''
+            }
+        },
+        [System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor [System.Text.RegularExpressions.RegexOptions]::Singleline
+    )
+    $markdown = [regex]::Replace(
+        $markdown,
+        '<\s*ul[^>]*>(.*?)<\s*/\s*ul\s*>',
+        {
+            param($match)
+            $items = [regex]::Matches($match.Groups[1].Value, '<\s*li[^>]*>(.*?)<\s*/\s*li\s*>', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor [System.Text.RegularExpressions.RegexOptions]::Singleline)
+            $lines = foreach ($item in $items) {
+                $line = [regex]::Replace($item.Groups[1].Value, '<[^>]+>', '', [System.Text.RegularExpressions.RegexOptions]::Singleline).Trim()
+                if ($line) {
+                    "- $line"
+                }
+            }
+
+            if ($lines) {
+                "`n$($lines -join "`n")`n"
+            }
+            else {
+                ''
+            }
+        },
+        [System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor [System.Text.RegularExpressions.RegexOptions]::Singleline
+    )
     $markdown = [regex]::Replace($markdown, '<[^>]+>', '', [System.Text.RegularExpressions.RegexOptions]::Singleline)
     $markdown = [System.Net.WebUtility]::HtmlDecode($markdown)
     $markdown = [regex]::Replace($markdown, "[`t ]+`n", "`n")
