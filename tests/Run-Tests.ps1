@@ -64,14 +64,14 @@ if ($Tags) {
 $result = Invoke-Pester -Configuration $config
 
 Write-Host ""
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+Write-Host "---------------------------------------------"
 if ($null -ne $result) {
     Write-Host "  Tests passed:  $($result.PassedCount)"
     Write-Host "  Tests failed:  $($result.FailedCount)"
     Write-Host "  Tests skipped: $($result.SkippedCount)"
     if ($result.FailedCount -gt 0) {
-        Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        Write-Host "---------------------------------------------"
         exit 1
     }
 }
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+Write-Host "---------------------------------------------"
