@@ -50,6 +50,10 @@ git submodule update --init --recursive
 .\Convert-ConfluenceHtml.ps1 -InputFile "page.html" -OutputFile "page.md"
 ```
 
+Optional:
+
+- `-ImageFolder "assets"` (default: `assets`)
+
 ### Download and convert a live Confluence page
 
 ```powershell
@@ -59,7 +63,14 @@ git submodule update --init --recursive
     -ApiToken "your-api-token"
 ```
 
-The downloader saves the output Markdown (and any images) to the current directory by default. Use `-OutputDir` to specify a different location.
+Optional:
+
+- `-OutputDir "./output"` (default: `./output`)
+- `-ImageFolder "assets"` (default: `assets`)
+- `-DownloadImages:$false` to skip image download (default: `$true`)
+- `-IncludeMetadata:$false` to skip YAML frontmatter (default: `$true`)
+
+The downloader writes a slugified Markdown filename (for example, `sample-page.md`) to `-OutputDir`.
 
 > **Tip:** Create a Confluence API token at <https://id.atlassian.com/manage-profile/security/api-tokens>.
 
