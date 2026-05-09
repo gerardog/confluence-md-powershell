@@ -1,4 +1,4 @@
-#Requires -Modules Pester
+﻿#Requires -Modules Pester
 <#
 .SYNOPSIS
     Pester 5 tests for Convert-ConfluenceHtml.ps1.
@@ -19,7 +19,7 @@
 #>
 
 BeforeAll {
-    $converterScript = Join-Path -Path $PSScriptRoot -ChildPath '..' -AdditionalChildPath 'Convert-ConfluenceHtml.ps1'
+    $converterScript = Join-Path (Join-Path $PSScriptRoot '..') 'Convert-ConfluenceHtml.ps1'
     $converterScript = (Resolve-Path $converterScript).Path
 
     # Helper: run the converter script on an HTML string and return the markdown

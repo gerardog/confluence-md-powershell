@@ -36,7 +36,7 @@ jobs:
           Write-Host "PSScriptAnalyzer: no errors found."
 
   test:
-    name: Test (Pester)
+    name: Test (Pester / PS 7)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -55,5 +55,28 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pester-test-results
+          name: pester-test-results-ps7
+          path: tests/TestResults*.xml
+
+  test-ps51:
+    name: Test (Pester / PS 5.1)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Pester
+        shell: powershell
+        run: Install-Module Pester -Force -Scope CurrentUser -RequiredVersion 5.7.1
+
+      - name: Run tests
+        shell: powershell
+        run: ./tests/Run-Tests.ps1
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pester-test-results-ps51
           path: tests/TestResults*.xml
